@@ -1,0 +1,7 @@
+repita 5 vezes
+  exiba "Funciona";
+n := 3;
+repita n vezes {
+  escreva n;
+  n := n + 1
+}

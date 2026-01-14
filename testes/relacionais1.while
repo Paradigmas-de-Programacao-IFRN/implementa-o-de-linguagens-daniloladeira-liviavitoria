@@ -1,0 +1,18 @@
+a := 10;
+b := 20;
+se a < b entao
+  exiba "Menor OK"
+senao
+  exiba "Falhou";
+se b > a entao
+  exiba "Maior OK"
+senao
+  exiba "Falhou";
+se b >= 20 entao
+  exiba "MaiorIgual OK"
+senao
+  exiba "Falhou";
+se a <> b entao
+  exiba "Diferente OK"
+senao
+  exiba "Falhou"

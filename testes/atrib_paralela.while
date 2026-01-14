@@ -1,0 +1,7 @@
+a, b, c := 2, 3, 4;
+exiba a;
+exiba b;
+exiba c;
+a, b := b, a;
+exiba a;
+exiba b

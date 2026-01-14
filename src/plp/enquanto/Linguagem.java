@@ -1,9 +1,7 @@
 package plp.enquanto;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
+import java.io.IOException;
 
 interface Linguagem {
 	Map<String, Integer> ambiente = new HashMap<>();
@@ -22,42 +20,51 @@ interface Linguagem {
 	}
 
 	/*
-	  Comandos
+	 * Comandos
 	 */
 	class Programa {
 		private final List<Comando> comandos;
+
 		public Programa(List<Comando> comandos) {
 			this.comandos = comandos;
 		}
+
 		public void execute() {
 			comandos.forEach(Comando::execute);
 		}
 	}
 
 	class Se implements Comando {
-		private final Bool condicao;
-		private final Comando entao;
+		private final List<Bool> condicoes;
+		private final List<Comando> ramos;
 		private final Comando senao;
 
-		public Se(Bool condicao, Comando entao, Comando senao) {
-			this.condicao = condicao;
-			this.entao = entao;
+		public Se(List<Bool> condicoes, List<Comando> ramos, Comando senao) {
+			this.condicoes = condicoes;
+			this.ramos = ramos;
 			this.senao = senao;
 		}
 
 		@Override
 		public void execute() {
-			if (condicao.getValor())
-				entao.execute();
-			else
+			for (int i = 0; i < condicoes.size(); i++) {
+				if (condicoes.get(i).getValor()) {
+					ramos.get(i).execute();
+					return;
+				}
+			}
+			if (senao != null) {
 				senao.execute();
+			}
 		}
 	}
 
 	Skip skip = new Skip();
+
 	class Skip implements Comando {
 		@Override
-		public void execute() {}
+		public void execute() {
+		}
 	}
 
 	class Escreva implements Comando {
@@ -90,6 +97,69 @@ interface Linguagem {
 		}
 	}
 
+	class Repita implements Comando {
+		private final Expressao vezes;
+		private final Comando corpo;
+
+		Repita(Expressao vezes, Comando corpo) {
+			this.vezes = vezes;
+			this.corpo = corpo;
+		}
+
+		@Override
+		public void execute() {
+			int n = vezes.getValor();
+			for (int i = 0; i < n; i++) {
+				corpo.execute();
+			}
+		}
+	}
+
+	class Para implements Comando {
+		private final String id;
+		private final Expressao inicio;
+		private final Expressao fim;
+		private final Comando corpo;
+
+		Para(String id, Expressao inicio, Expressao fim, Comando corpo) {
+			this.id = id;
+			this.inicio = inicio;
+			this.fim = fim;
+			this.corpo = corpo;
+		}
+
+		@Override
+		public void execute() {
+			for (int i = inicio.getValor(); i <= fim.getValor(); i++) {
+				ambiente.put(id, i);
+				corpo.execute();
+			}
+		}
+	}
+
+	class Escolha implements Comando {
+		private final Expressao seletor;
+		private final Map<Integer, Comando> casos;
+		private final Comando outro;
+
+		Escolha(Expressao seletor, Map<Integer, Comando> casos, Comando outro) {
+			this.seletor = seletor;
+			this.casos = casos;
+			this.outro = outro;
+		}
+
+		@Override
+		public void execute() {
+			int valor = seletor.getValor();
+			Comando cmd = casos.get(valor);
+			if (cmd != null) {
+				cmd.execute();
+			} else if (outro != null) {
+				outro.execute();
+			}
+		}
+	}
+
 	class Exiba implements Comando {
 		private final String texto;
 
@@ -100,6 +170,19 @@ interface Linguagem {
 		@Override
 		public void execute() {
 			System.out.println(texto);
+		}
+	}
+
+	class ExibaExp implements Comando {
+		private final Expressao exp;
+
+		public ExibaExp(Expressao exp) {
+			this.exp = exp;
+		}
+
+		@Override
+		public void execute() {
+			System.out.println(exp.getValor());
 		}
 	}
 
@@ -117,25 +200,34 @@ interface Linguagem {
 	}
 
 	class Atribuicao implements Comando {
-		private final String id;
-		private final Expressao exp;
+		private final List<String> ids;
+		private final List<Expressao> exps;
 
-		Atribuicao(String id, Expressao exp) {
-			this.id = id;
-			this.exp = exp;
+		Atribuicao(List<String> ids, List<Expressao> exps) {
+			this.ids = ids;
+			this.exps = exps;
 		}
 
 		@Override
 		public void execute() {
-			ambiente.put(id, exp.getValor());
+			// CRUCIAL: Avaliar todas expressões ANTES de atribuir
+			// Isso permite a,b := b,a funcionar corretamente
+			List<Integer> valores = new ArrayList<>();
+			for (Expressao exp : exps) {
+				valores.add(exp.getValor());
+			}
+			// Agora atribuir os valores
+			for (int i = 0; i < ids.size(); i++) {
+				ambiente.put(ids.get(i), valores.get(i));
+			}
 		}
 	}
 
 	/*
-	   Expressoes
+	 * Expressoes
 	 */
 
-	abstract class OpBin<T>  {
+	abstract class OpBin<T> {
 		protected final T esq;
 		protected final T dir;
 
@@ -145,7 +237,7 @@ interface Linguagem {
 		}
 	}
 
-	abstract class OpUnaria<T>  {
+	abstract class OpUnaria<T> {
 		protected final T operando;
 
 		OpUnaria(T operando) {
@@ -180,6 +272,7 @@ interface Linguagem {
 	}
 
 	Leia leia = new Leia();
+
 	class Leia implements Expressao {
 		@Override
 		public int getValor() {
@@ -209,7 +302,7 @@ interface Linguagem {
 		}
 	}
 
-	class ExpMult extends OpBin<Expressao> implements Expressao{
+	class ExpMult extends OpBin<Expressao> implements Expressao {
 		ExpMult(Expressao esq, Expressao dir) {
 			super(esq, dir);
 		}
@@ -217,6 +310,28 @@ interface Linguagem {
 		@Override
 		public int getValor() {
 			return esq.getValor() * dir.getValor();
+		}
+	}
+
+	class ExpDiv extends OpBin<Expressao> implements Expressao {
+		ExpDiv(Expressao esq, Expressao dir) {
+			super(esq, dir);
+		}
+
+		@Override
+		public int getValor() {
+			return esq.getValor() / dir.getValor();
+		}
+	}
+
+	class ExpPow extends OpBin<Expressao> implements Expressao {
+		ExpPow(Expressao esq, Expressao dir) {
+			super(esq, dir);
+		}
+
+		@Override
+		public int getValor() {
+			return (int) Math.pow(esq.getValor(), dir.getValor());
 		}
 	}
 
@@ -244,7 +359,7 @@ interface Linguagem {
 		}
 	}
 
-	class ExpMenorIgual extends OpBin<Expressao> implements Bool{
+	class ExpMenorIgual extends OpBin<Expressao> implements Bool {
 		ExpMenorIgual(Expressao esq, Expressao dir) {
 			super(esq, dir);
 		}
@@ -255,7 +370,51 @@ interface Linguagem {
 		}
 	}
 
-	class NaoLogico extends OpUnaria<Bool> implements Bool{
+	class ExpMenor extends OpBin<Expressao> implements Bool {
+		ExpMenor(Expressao esq, Expressao dir) {
+			super(esq, dir);
+		}
+
+		@Override
+		public boolean getValor() {
+			return esq.getValor() < dir.getValor();
+		}
+	}
+
+	class ExpMaior extends OpBin<Expressao> implements Bool {
+		ExpMaior(Expressao esq, Expressao dir) {
+			super(esq, dir);
+		}
+
+		@Override
+		public boolean getValor() {
+			return esq.getValor() > dir.getValor();
+		}
+	}
+
+	class ExpMaiorIgual extends OpBin<Expressao> implements Bool {
+		ExpMaiorIgual(Expressao esq, Expressao dir) {
+			super(esq, dir);
+		}
+
+		@Override
+		public boolean getValor() {
+			return esq.getValor() >= dir.getValor();
+		}
+	}
+
+	class ExpDiferente extends OpBin<Expressao> implements Bool {
+		ExpDiferente(Expressao esq, Expressao dir) {
+			super(esq, dir);
+		}
+
+		@Override
+		public boolean getValor() {
+			return esq.getValor() != dir.getValor();
+		}
+	}
+
+	class NaoLogico extends OpUnaria<Bool> implements Bool {
 		NaoLogico(Bool operando) {
 			super(operando);
 		}
@@ -266,7 +425,7 @@ interface Linguagem {
 		}
 	}
 
-	class ELogico extends OpBin<Bool> implements Bool{
+	class ELogico extends OpBin<Bool> implements Bool {
 		ELogico(Bool esq, Bool dir) {
 			super(esq, dir);
 		}
@@ -274,6 +433,28 @@ interface Linguagem {
 		@Override
 		public boolean getValor() {
 			return esq.getValor() && dir.getValor();
+		}
+	}
+
+	class OuLogico extends OpBin<Bool> implements Bool {
+		OuLogico(Bool esq, Bool dir) {
+			super(esq, dir);
+		}
+
+		@Override
+		public boolean getValor() {
+			return esq.getValor() || dir.getValor();
+		}
+	}
+
+	class XorLogico extends OpBin<Bool> implements Bool {
+		XorLogico(Bool esq, Bool dir) {
+			super(esq, dir);
+		}
+
+		@Override
+		public boolean getValor() {
+			return esq.getValor() ^ dir.getValor();
 		}
 	}
 }

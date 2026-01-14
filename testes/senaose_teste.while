@@ -1,0 +1,7 @@
+nota := leia;
+se nota >= 6 entao
+  exiba "Aprovado"
+senaose nota >= 3 entao
+  exiba "Recuperacao"
+senao
+  exiba "Reprovado"

@@ -1,0 +1,6 @@
+para i de 1 ate 5 faca
+  exiba i;
+n := 10;
+para j de 1 ate n faca {
+  escreva j
+}

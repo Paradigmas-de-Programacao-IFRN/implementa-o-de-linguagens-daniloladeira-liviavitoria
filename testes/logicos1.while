@@ -1,0 +1,10 @@
+a := 5;
+b := 10;
+se a = 5 ou b = 20 entao
+  exiba "OU funciona"
+senao
+  exiba "OU falhou";
+se a = 5 xor b = 10 entao
+  exiba "XOR falhou"
+senao
+  exiba "XOR funciona"

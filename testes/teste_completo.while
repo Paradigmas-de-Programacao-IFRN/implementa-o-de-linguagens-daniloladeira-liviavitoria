@@ -1,0 +1,75 @@
+# Teste Completo - Linguagem Enquanto com Todas as Melhorias
+
+# Tarefa 1: Operações / e ^
+exiba "Teste 1: Divisao e Exponenciacao";
+a := 10;
+b := 2;
+exiba a / b;
+exiba a ^ b;
+
+# Tarefa 2: Operadores ou e xor
+exiba "Teste 2: OU e XOR";
+se a = 10 ou b = 5 entao
+  exiba "OU funciona";
+se a = 10 xor b = 2 entao
+  exiba "XOR falha (ambos verdadeiros)";
+senao
+  exiba "XOR funciona";
+
+# Tarefa 3: Operadores relacionais <, >, >=, <>
+exiba "Teste 3: Operadores Relacionais";
+se a < 20 entao exiba "Menor OK";
+se b > 1 entao exiba "Maior OK";
+se a >= 10 entao exiba "MaiorIgual OK";
+se a <> b entao exiba "Diferente OK";
+
+# Tarefa 4: Comando repita
+exiba "Teste 4: Comando Repita";
+repita 3 vezes
+  exiba "Repetido";
+
+# Tarefa 5: Exiba polimórfico
+exiba "Teste 5: Exiba Polimorfico";
+exiba "Texto";
+exiba 2025;
+exiba a + b;
+
+# Tarefa 6: Comando para
+exiba "Teste 6: Comando Para";
+para i de 1 ate 3 faca
+  exiba i;
+
+# Tarefa 7: Cláusula senaose
+exiba "Teste 7: Senaose";
+nota := 5;
+se nota >= 6 entao
+  exiba "Aprovado";
+senaose nota >= 3 entao
+  exiba "Recuperacao";
+senao
+  exiba "Reprovado";
+
+# Tarefa 8: ; finaliza comandos (nova sintaxe)
+exiba "Teste 8: Ponto-virgula finaliza comandos";
+
+# Tarefa 9: Comando escolha
+exiba "Teste 9: Comando Escolha";
+x := 2;
+escolha x
+  caso 1 : exiba "um";
+  caso 2 : exiba "dois";
+  caso 3 : exiba "tres";
+  outro : exiba "outro";
+
+# Tarefa 10: Atribuições paralelas
+exiba "Teste 10: Atribuicoes Paralelas";
+p, q, r := 7, 8, 9;
+exiba p;
+exiba q;
+exiba r;
+p, q := q, p;
+exiba "Apos swap:";
+exiba p;
+exiba q;
+
+exiba "Todos os testes completados!";

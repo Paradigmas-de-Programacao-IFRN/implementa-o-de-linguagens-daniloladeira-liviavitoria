@@ -1,0 +1,11 @@
+n := 3;
+se n > 2 entao
+  exiba "Maior";
+senao
+  exiba "Menor";
+enquanto n > 0 faca {
+  exiba n;
+  n := n - 1;
+}
+para i de 1 ate 3 faca
+  exiba i;
